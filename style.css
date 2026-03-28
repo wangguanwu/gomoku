@@ -1,0 +1,46 @@
+/* 页面基础样式 */
+body {
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f5f5dc;
+    font-family: Arial, sans-serif;
+}
+
+/* 游戏标题样式 */
+h1 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* 状态提示文字 */
+#status {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+/* Canvas 棋盘容器 */
+canvas {
+    border: 2px solid #8b4513;
+    background-color: #deb887;
+    cursor: pointer;
+}
+
+/* 重新开始按钮 */
+#restart {
+    margin-top: 15px;
+    padding: 10px 30px;
+    font-size: 16px;
+    background-color: #8b4513;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#restart:hover {
+    background-color: #a0522d;
+}
