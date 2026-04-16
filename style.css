@@ -1,46 +1,135 @@
-/* 页面基础样式 */
+/* ==================== 页面基础样式（科幻风格）==================== */
 body {
     margin: 0;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #f5f5dc;
-    font-family: Arial, sans-serif;
+    /* 深空黑背景 */
+    background-color: #0a0a0f;
+    /* 科幻字体 */
+    font-family: 'Segoe UI', 'Orbitron', Arial, sans-serif;
+    min-height: 100vh;
 }
 
-/* 游戏标题样式 */
+/* ==================== 游戏标题样式（霓虹发光）==================== */
 h1 {
-    color: #333;
+    color: #00ffff;
     margin-bottom: 10px;
+    font-size: 2.5rem;
+    font-weight: bold;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    /* 霓虹青色发光效果 */
+    text-shadow:
+        0 0 5px #00ffff,
+        0 0 10px #00ffff,
+        0 0 20px #00ffff,
+        0 0 40px #00ffff;
+    animation: titleGlow 2s ease-in-out infinite alternate;
 }
 
-/* 状态提示文字 */
+/* 标题发光动画 */
+@keyframes titleGlow {
+    from {
+        text-shadow:
+            0 0 5px #00ffff,
+            0 0 10px #00ffff,
+            0 0 20px #00ffff,
+            0 0 40px #00ffff;
+    }
+    to {
+        text-shadow:
+            0 0 10px #00ffff,
+            0 0 20px #00ffff,
+            0 0 40px #00ffff,
+            0 0 80px #00ffff,
+            0 0 120px #00ffff;
+    }
+}
+
+/* ==================== 状态提示文字 ==================== */
 #status {
     font-size: 18px;
     margin-bottom: 10px;
-    color: #555;
+    color: #7b2cbf;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #7b2cbf;
 }
 
-/* Canvas 棋盘容器 */
+/* ==================== Canvas 棋盘容器（发光边框）==================== */
 canvas {
-    border: 2px solid #8b4513;
-    background-color: #deb887;
+    /* 霓虹青色发光边框 */
+    border: 2px solid #00ffff;
+    background-color: #1a1a2e;
     cursor: pointer;
+    /* 多层发光效果 */
+    box-shadow:
+        0 0 5px #00ffff,
+        0 0 10px #00ffff,
+        0 0 20px rgba(0, 255, 255, 0.5),
+        inset 0 0 30px rgba(0, 255, 255, 0.1);
+    border-radius: 4px;
 }
 
-/* 重新开始按钮 */
+/* ==================== 重新开始按钮（霓虹渐变）==================== */
 #restart {
     margin-top: 15px;
-    padding: 10px 30px;
+    padding: 12px 40px;
     font-size: 16px;
-    background-color: #8b4513;
-    color: white;
-    border: none;
-    border-radius: 5px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #00ffff;
+    background: linear-gradient(135deg, #1a1a2e 0%, #7b2cbf 100%);
+    border: 2px solid #00ffff;
+    border-radius: 4px;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    /* 霓虹发光效果 */
+    box-shadow:
+        0 0 5px #00ffff,
+        0 0 10px rgba(0, 255, 255, 0.5);
 }
 
+/* 按钮悬停动画 */
 #restart:hover {
-    background-color: #a0522d;
+    background: linear-gradient(135deg, #7b2cbf 0%, #ff00ff 100%);
+    color: #0a0a0f;
+    border-color: #ff00ff;
+    box-shadow:
+        0 0 10px #ff00ff,
+        0 0 20px #ff00ff,
+        0 0 40px rgba(255, 0, 255, 0.5);
+    transform: scale(1.05);
+}
+
+/* 按钮点击效果 */
+#restart:active {
+    transform: scale(0.98);
+}
+
+/* 按钮扫光动画 */
+#restart::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(0, 255, 255, 0.3) 50%,
+        transparent 70%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
+
+#restart:hover::before {
+    transform: translateX(100%);
 }
