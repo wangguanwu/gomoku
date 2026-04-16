@@ -1,8 +1,15 @@
 // ==================== 游戏常量配置 ====================
 const BOARD_SIZE = 15;
-const CELL_SIZE = 30;
-const PIECE_RADIUS = 13;
 const PADDING = 15;
+// 动态计算 CELL_SIZE：棋盘占屏幕约80%
+let CELL_SIZE = Math.floor((Math.min(window.innerWidth, window.innerHeight) * 0.8 - PADDING * 2) / BOARD_SIZE);
+let PIECE_RADIUS = Math.floor(CELL_SIZE * 0.43);
+
+// 窗口大小变化时重新计算尺寸
+function recalculateSize() {
+    CELL_SIZE = Math.floor((Math.min(window.innerWidth, window.innerHeight) * 0.8 - PADDING * 2) / BOARD_SIZE);
+    PIECE_RADIUS = Math.floor(CELL_SIZE * 0.43);
+}
 
 // ==================== 科幻配色 ====================
 const COLORS = {
@@ -84,6 +91,7 @@ const particleSystem = {
 
 // ==================== 初始化 ====================
 function init() {
+    recalculateSize();
     board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0));
     canvas = document.getElementById('board');
     ctx = canvas.getContext('2d');
