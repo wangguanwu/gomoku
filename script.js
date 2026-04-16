@@ -11,6 +11,299 @@ function recalculateSize() {
     PIECE_RADIUS = Math.floor(CELL_SIZE * 0.43);
 }
 
+// ==================== 音频系统 ====================
+let audioCtx = null;
+let bgmPlaying = false;
+let bgmGain = null;
+
+// 初始化音频上下文
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+// 播放下棋音效
+function playDropSound() {
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
+
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.15);
+}
+
+// 播放获胜音效
+function playWinSound() {
+    initAudio();
+    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0, audioCtx.currentTime + i * 0.15);
+        gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + i * 0.15 + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.15 + 0.4);
+        osc.start(audioCtx.currentTime + i * 0.15);
+        osc.stop(audioCtx.currentTime + i * 0.15 + 0.4);
+    });
+}
+
+// 简单的钢琴曲旋律 (C大调)
+const BGM_MELODY = [
+    { note: 262, dur: 0.4 },  // C4
+    { note: 294, dur: 0.4 },  // D4
+    { note: 330, dur: 0.4 },  // E4
+    { note: 262, dur: 0.4 },  // C4
+    { note: 330, dur: 0.4 },  // E4
+    { note: 294, dur: 0.4 },  // D4
+    { note: 392, dur: 0.8 },  // G4
+    { note: 349, dur: 0.4 },  // F4
+    { note: 330, dur: 0.4 },  // E4
+    { note: 294, dur: 0.4 },  // D4
+    { note: 262, dur: 0.4 },  // C4
+    { note: 392, dur: 0.8 },  // G4
+    { note: 440, dur: 0.4 },  // A4
+    { note: 494, dur: 0.4 },  // B4
+    { note: 523, dur: 0.8 },  // C5
+    { note: 494, dur: 0.4 },  // B4
+    { note: 440, dur: 0.4 },  // A4
+    { note: 392, dur: 0.8 },  // G4
+    { note: 330, dur: 0.6 },  // E4
+    { note: 262, dur: 0.6 },  // C4
+    { note: 294, dur: 0.6 },  // D4
+    { note: 330, dur: 0.6 },  // E4
+    { note: 262, dur: 1.2 },  // C4 (长音)
+];
+
+// 天空之城 旋律 (简化版)
+const SKY_CASTLE_MELODY = [
+    { note: 392, dur: 0.6 },  // G4
+    { note: 440, dur: 0.6 },  // A4
+    { note: 494, dur: 0.6 },  // B4
+    { note: 523, dur: 0.6 },  // C5
+    { note: 494, dur: 0.3 },  // B4
+    { note: 440, dur: 0.3 },  // A4
+    { note: 392, dur: 0.6 },  // G4
+    { note: 349, dur: 0.6 },  // F4
+    { note: 330, dur: 0.6 },  // E4
+    { note: 294, dur: 0.6 },  // D4
+    { note: 330, dur: 0.3 },  // E4
+    { note: 294, dur: 0.3 },  // D4
+    { note: 262, dur: 0.6 },  // C4
+    { note: 294, dur: 0.6 },  // D4
+    { note: 330, dur: 0.6 },  // E4
+    { note: 349, dur: 0.6 },  // F4
+    { note: 330, dur: 0.3 },  // E4
+    { note: 294, dur: 0.3 },  // D4
+    { note: 262, dur: 1.2 },  // C4
+    { note: 0, dur: 0.3 },    // 休止
+    { note: 330, dur: 0.6 },  // E4
+    { note: 392, dur: 0.6 },  // G4
+    { note: 440, dur: 0.6 },  // A4
+    { note: 494, dur: 0.6 },  // B4
+    { note: 523, dur: 0.6 },  // C5
+    { note: 494, dur: 0.3 },  // B4
+    { note: 440, dur: 0.3 },  // A4
+    { note: 392, dur: 0.6 },  // G4
+    { note: 349, dur: 0.6 },  // F4
+    { note: 294, dur: 1.2 },  // D4
+];
+
+// 巴赫 C大调前奏曲 (简化版)
+const BACH_MELODY = [
+    { note: 261, dur: 0.25 }, // C4
+    { note: 293, dur: 0.25 }, // D4
+    { note: 329, dur: 0.25 }, // E4
+    { note: 349, dur: 0.25 }, // F4
+    { note: 392, dur: 0.25 }, // G4
+    { note: 440, dur: 0.25 }, // A4
+    { note: 493, dur: 0.25 }, // B4
+    { note: 523, dur: 0.25 }, // C5
+    { note: 493, dur: 0.25 }, // B4
+    { note: 440, dur: 0.25 }, // A4
+    { note: 392, dur: 0.25 }, // G4
+    { note: 349, dur: 0.25 }, // F4
+    { note: 329, dur: 0.25 }, // E4
+    { note: 293, dur: 0.25 }, // D4
+    { note: 261, dur: 0.25 }, // C4
+    { note: 293, dur: 0.25 }, // D4
+    { note: 329, dur: 0.25 }, // E4
+    { note: 349, dur: 0.25 }, // F4
+    { note: 392, dur: 0.25 }, // G4
+    { note: 440, dur: 0.25 }, // A4
+    { note: 493, dur: 0.25 }, // B4
+    { note: 523, dur: 0.5 },  // C5
+    { note: 493, dur: 0.25 }, // B4
+    { note: 440, dur: 0.25 }, // A4
+    { note: 392, dur: 0.25 }, // G4
+    { note: 349, dur: 0.25 }, // F4
+    { note: 329, dur: 0.25 }, // E4
+    { note: 293, dur: 0.25 }, // D4
+    { note: 261, dur: 0.5 },  // C4
+];
+
+// 贝多芬 月光奏鸣曲 第一乐章 主题 (简化版)
+const BEETHOVEN_MELODY = [
+    { note: 311, dur: 0.5 },  // D#4 (Eb4)
+    { note: 0, dur: 0.25 },   // 休止
+    { note: 311, dur: 0.25 }, // D#4
+    { note: 369, dur: 0.5 },  // F#4 (Gb4)
+    { note: 0, dur: 0.25 },   // 休止
+    { note: 369, dur: 0.25 }, // F#4
+    { note: 415, dur: 0.5 },  // G#4 (Ab4)
+    { note: 0, dur: 0.25 },   // 休止
+    { note: 415, dur: 0.25 }, // G#4
+    { note: 466, dur: 1.0 },  // A#4 (Bb4)
+    { note: 0, dur: 0.5 },    // 休止
+    { note: 466, dur: 0.5 },  // A#4
+    { note: 415, dur: 0.5 },  // G#4
+    { note: 369, dur: 0.5 },  // F#4
+    { note: 311, dur: 1.0 },  // D#4
+    { note: 0, dur: 0.5 },    // 休止
+    { note: 277, dur: 0.5 },  // C#4
+    { note: 0, dur: 0.25 },   // 休止
+    { note: 277, dur: 0.25 }, // C#4
+    { note: 329, dur: 0.5 },  // E4
+    { note: 0, dur: 0.25 },   // 休止
+    { note: 329, dur: 0.25 }, // E4
+    { note: 369, dur: 0.5 },  // F#4
+    { note: 0, dur: 0.25 },   // 休止
+    { note: 369, dur: 0.25 }, // F#4
+    { note: 415, dur: 1.0 },  // G#4
+    { note: 0, dur: 0.5 },    // 休止
+    { note: 415, dur: 0.5 },  // G#4
+    { note: 369, dur: 0.5 },  // F#4
+    { note: 329, dur: 0.5 },  // E4
+    { note: 277, dur: 1.0 },  // C#4
+];
+
+// 歌曲列表
+const PLAYLIST = [
+    { name: '🎹 简单旋律', melody: BGM_MELODY },
+    { name: '🏯 天空之城', melody: SKY_CASTLE_MELODY },
+    { name: '🎼 巴赫前奏曲', melody: BACH_MELODY },
+    { name: '🌙 月光奏鸣曲', melody: BEETHOVEN_MELODY }
+];
+
+let currentSongIndex = 0;
+let bgmTimeout = null;
+
+// 播放单个音符（钢琴音色）
+function playPianoNote(freq, duration) {
+    if (!audioCtx) return;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+
+    // 钢琴音色包络
+    const now = audioCtx.currentTime;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.15, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.08, now + duration * 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+    osc.start(now);
+    osc.stop(now + duration);
+}
+
+// 播放背景音乐循环
+function playBGM() {
+    if (bgmPlaying) return;
+    bgmPlaying = true;
+
+    initAudio();
+    bgmGain = audioCtx.createGain();
+    bgmGain.gain.value = 0.1;
+    bgmGain.connect(audioCtx.destination);
+
+    const currentMelody = PLAYLIST[currentSongIndex].melody;
+
+    function playNextNote(index) {
+        if (!bgmPlaying) return;
+        const { note, dur } = currentMelody[index % currentMelody.length];
+
+        if (note > 0) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(bgmGain);
+
+            osc.frequency.value = note;
+            osc.type = 'sine';
+
+            const now = audioCtx.currentTime;
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.12, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.06, now + dur * 0.3);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+            osc.start(now);
+            osc.stop(now + dur);
+        }
+
+        bgmTimeout = setTimeout(() => playNextNote(index + 1), dur * 1000);
+    }
+
+    playNextNote(0);
+}
+
+// 停止背景音乐
+function stopBGM() {
+    bgmPlaying = false;
+    if (bgmTimeout) {
+        clearTimeout(bgmTimeout);
+        bgmTimeout = null;
+    }
+}
+
+// 切换到下一首歌
+function nextSong() {
+    stopBGM();
+    currentSongIndex = (currentSongIndex + 1) % PLAYLIST.length;
+    playBGM();
+    updateBGMButton();
+}
+
+// 更新BGM按钮文字
+function updateBGMButton() {
+    const btn = document.getElementById('bgm-toggle');
+    btn.textContent = PLAYLIST[currentSongIndex].name;
+    if (bgmPlaying) {
+        btn.classList.add('playing');
+    } else {
+        btn.classList.remove('playing');
+    }
+}
+
+// 切换背景音乐
+function toggleBGM() {
+    if (bgmPlaying) {
+        stopBGM();
+    } else {
+        playBGM();
+    }
+    updateBGMButton();
+}
+
 // ==================== 科幻配色 ====================
 const COLORS = {
     background: '#1a1a2e',
@@ -112,6 +405,27 @@ function init() {
     canvas.onmousemove = handleMouseMove;
     canvas.onmouseleave = handleMouseLeave;
     document.getElementById('restart').onclick = init;
+    document.getElementById('bgm-toggle').onclick = () => {
+        initAudio();
+        if (bgmPlaying) {
+            // 播放中：切换到下一首歌
+            nextSong();
+        } else {
+            // 暂停中：继续播放
+            playBGM();
+            updateBGMButton();
+        }
+    };
+
+    // 首次点击页面时启动BGM（浏览器自动播放政策）
+    if (!bgmPlaying) {
+        const startBgm = () => {
+            initAudio();
+            playBGM();
+            document.removeEventListener('click', startBgm);
+        };
+        document.addEventListener('click', startBgm, { once: true });
+    }
 
     if (!animationId) {
         animationId = requestAnimationFrame(gameLoop);
@@ -300,6 +614,7 @@ function handleClick(e) {
     if (board[row][col] !== 0) return;
 
     board[row][col] = currentPlayer;
+    playDropSound();
 
     dropAnimations.push({ row, col, progress: 0 });
 
@@ -312,6 +627,8 @@ function handleClick(e) {
     if (win) {
         gameOver = true;
         winLine = win;
+        playWinSound();
+        stopBGM();
         const winner = currentPlayer === 1 ? '黑棋' : '白棋';
         document.getElementById('status').textContent = winner + '获胜！';
         document.getElementById('status').style.color = COLORS.winHighlight;

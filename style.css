@@ -75,9 +75,16 @@ canvas {
     max-height: 70vh;
 }
 
+/* ==================== 按钮容器 ==================== */
+.button-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
 /* ==================== 重新开始按钮（霓虹渐变）==================== */
 #restart {
-    margin-top: 15px;
+    padding: 12px 40px;
     padding: 12px 40px;
     font-size: 16px;
     font-weight: bold;
@@ -130,4 +137,48 @@ canvas {
 
 #restart:hover::before {
     transform: translateX(100%);
+}
+
+/* ==================== 音乐控制按钮 ==================== */
+#bgm-toggle {
+    padding: 12px 40px;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #ff00ff;
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 100%);
+    border: 2px solid #ff00ff;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow:
+        0 0 5px #ff00ff,
+        0 0 10px rgba(255, 0, 255, 0.5);
+}
+
+#bgm-toggle:hover {
+    background: linear-gradient(135deg, #2d1b4e 0%, #ff00ff 100%);
+    color: #0a0a0f;
+    border-color: #00ffff;
+    box-shadow:
+        0 0 10px #00ffff,
+        0 0 20px #00ffff,
+        0 0 40px rgba(0, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+#bgm-toggle:active {
+    transform: scale(0.98);
+}
+
+#bgm-toggle.playing {
+    animation: musicPulse 1s ease-in-out infinite;
+}
+
+@keyframes musicPulse {
+    0%, 100% { box-shadow: 0 0 5px #ff00ff, 0 0 10px rgba(255, 0, 255, 0.5); }
+    50% { box-shadow: 0 0 15px #ff00ff, 0 0 30px rgba(255, 0, 255, 0.8); }
 }
